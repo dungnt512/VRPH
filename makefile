@@ -6,6 +6,7 @@ CFLAGS= -O3 -Wall
 # Defaults to ./lib and ./bin
 VRPH_LIB_DIR = ./lib
 VRPH_BIN_DIR = ./bin
+WIN_VRPH_BIN_DIR = $(subst /,\,$(VRPH_BIN_DIR))
 
 # Set names of executables
 RTR_EXE = $(VRPH_BIN_DIR)/vrp_rtr
@@ -14,6 +15,7 @@ SP_EXE = $(VRPH_BIN_DIR)/vrp_sp
 SA_EXE = $(VRPH_BIN_DIR)/vrp_sa
 INIT_EXE = $(VRPH_BIN_DIR)/vrp_init
 PLOT_EXE = $(VRPH_BIN_DIR)/vrp_plot
+SBR_BATCH_EXE = $(VRPH_BIN_DIR)/sbr_batch_runner.exe
 
 # Set name of libraries needed by applicaitons
 LIBS= -lvrph -lm
@@ -84,8 +86,9 @@ SA_SRC= ./src/apps/vrp_sa.cpp
 EJ_SRC= ./src/apps/vrp_ej.cpp
 INIT_SRC= ./src/apps/vrp_initial.cpp
 PLOT_SRC= ./src/apps/vrp_plotter.cpp
+SBR_BATCH_SRC= ./src/apps/sbr_batch_runner.cpp
 
-all: $(VRPH_LIB) vrp_rtr vrp_sa vrp_init vrp_ej vrp_sp vrp_plot
+all: $(VRPH_LIB) vrp_rtr vrp_sa vrp_init vrp_ej vrp_sp vrp_plot sbr_batch_runner
 
 $(VRPH_LIB): $(OBJS)
 	mkdir -p $(VRPH_LIB_DIR)
@@ -130,6 +133,11 @@ ifeq ($(HAS_OSI_GLPK),1)
 	mkdir -p $(VRPH_BIN_DIR)
 	$(CC) $(CFLAGS) $(INC_DIR) $(OSI_INC_DIR) $(GLPK_INC_DIR) $(OSI_LIB_DIR) $(GLPK_LIB_DIR) $(LIB_DIR) $(SP_SRC) $(LIBS) $(GLPK_LIBS) $(OSI_LIBS) -o $(SP_EXE)
 endif
+
+# Batch runner for the school bus routing test set 0.in..19.in.
+sbr_batch_runner: $(SBR_BATCH_SRC)
+	if not exist "$(WIN_VRPH_BIN_DIR)" mkdir "$(WIN_VRPH_BIN_DIR)"
+	$(CC) $(CFLAGS) -std=c++17 $(INC_DIR) $(SBR_BATCH_SRC) $(SRCS) -o $(SBR_BATCH_EXE)
 
 
 # test - just run the binaries on the test_instance 
@@ -184,6 +192,7 @@ clean:
 	-rm -rf $(SA_EXE)
 	-rm -rf $(PLOT_EXE)
 	-rm -rf $(INIT_EXE)
+	-rm -rf $(SBR_BATCH_EXE)
 	-rm -rf $(TEST_OUTPUT).tmp
 	-rm -rf $(TEST_OUTPUT)
 	-rm -rf test_instance.sol
